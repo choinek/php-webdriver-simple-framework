@@ -131,8 +131,7 @@ class Bootstrap
                                         }
                                     }
 
-                                    $className = str_replace($this->testDir . '/', '', $testPath) . '/Test';
-                                    $className = '\\Choinek\\FunctionalTests\\' . str_replace('/', '\\', $className);
+                                    $className = $testConfig['className'];
 
                                     /** @var TestAbstract $test */
                                     $test = new $className($driver);
