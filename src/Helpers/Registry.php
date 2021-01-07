@@ -14,17 +14,24 @@ class Registry
      */
     public static $data = [];
 
-    public static function getData($name, $namespace = self::DEFAULT_NAMESPACE): bool
+    /**
+     * Get data from registry
+     *
+     * @param string $key
+     * @param string $namespace optional
+     * @return mixed|null
+     */
+    public static function getData(string $key, string $namespace = self::DEFAULT_NAMESPACE)
     {
-        return self::$data[$namespace][$name] ?? false;
+        return self::$data[$namespace][$key] ?? null;
     }
 
     /**
-     * @param $name
+     * @param string $name
      * @param $value
      * @param string $namespace
      */
-    public static function setData($name, $value, $namespace = self::DEFAULT_NAMESPACE): void
+    public static function setData(string $name, $value, string $namespace = self::DEFAULT_NAMESPACE): void
     {
         self::$data[$namespace][$name] = $value;
     }
@@ -33,7 +40,7 @@ class Registry
      * Reset registry by namespace
      * @param string $namespace
      */
-    public static function reset($namespace = self::DEFAULT_NAMESPACE): void
+    public static function reset(string $namespace = self::DEFAULT_NAMESPACE): void
     {
         if (self::$data[$namespace]) {
             unset(self::$data[$namespace]);
