@@ -93,87 +93,48 @@ class Bootstrap
                 echo "Run resolution: " . $resolution['width'] . 'x' . $resolution['height'] . "\n";
                 /** todo rest browsers */
 
-                $driver = $this->prepareRemoteWebDriver($browser, $resolution);
 
-                $groupsPath = glob($this->testDir . '/*', GLOB_ONLYDIR);
+                $configPath = $this->testDir . DIRECTORY_SEPARATOR . 'config.php';
+                $config = require_once($configPath);
 
-                foreach ($groupsPath as $groupPath) {
-                    $groupConfigPath = $groupPath . '/config.php';
-                    if (!is_file($groupConfigPath)) {
-                        throw new \Exception('File ' . $groupConfigPath . ' does not exist! Did you forget about it?');
-                    }
-                    $groupConfig = require $groupConfigPath;
+                if (!isset($config['tests'])) {
+                    throw new \Exception($configPath . ' is not configured properly.');
+                }
+
+                foreach ($config['tests'] as $groupConfig) {
+
+                    $driver = $this->prepareRemoteWebDriver($browser, $resolution);
+
                     if ($groupConfig['active']) {
                         /** @todo interface */
                         echo "= Run test group: {$groupConfig['name']} =\n";
-                        $testsPath = glob($groupPath . '/*', GLOB_ONLYDIR);
-                        foreach ($testsPath as $testPath) {
-                            $testConfigPath = $testPath . '/config.php';
-                            if (!is_file($groupConfigPath)) {
-                                throw new \Exception('File ' . $groupConfigPath . ' does not exist! Did you forget about it?');
-                            }
-                            /** @var array $testConfigPath */
-                            $testConfig = require $testConfigPath;
+                        foreach ($groupConfig['classes'] as $className) {
+                            echo '== Run test: ' . $className::$name . "\n";
 
-                            $pathInfo = implode('/', array_slice(explode('/', $testPath), -2, 2, true));
+                            try {
+                                /** @var TestAbstract $test */
+                                $test = new $className($driver);
 
-                            if ($testConfig['active']) {
-                                echo "== Run test: {$testConfig['name']} ==\n";
+                                $test->run();
+                                $this->logInfo("Test " . $className::$name . "\n");
 
-                                try {
+                            } catch (Failure $e) {
 
-                                    if (isset($testConfig['prerun']) && is_array($testConfig['prerun']) && $testConfig) {
-                                        foreach ($testConfig['prerun'] as $preTestClassName) {
-                                            /** @var TestAbstract $test */
-                                            echo "=== Run pretest: {$preTestClassName} ===\n";
-                                            $test = new $preTestClassName($driver);
-                                            $test->run();
-                                        }
-                                    }
+                                $this->logInfo("Test " . $className::$name . " failed: " . $e->getMessage() . "\n", 'failure');
 
-                                    $className = $testConfig['className'];
+                            } catch (\Exception $e) {
 
-                                    /** @var TestAbstract $test */
-                                    $test = new $className($driver);
-
-                                    $test->run();
-                                    $this->logInfo("Test {$pathInfo} ({$testConfig['name']}) succeed\n");
-
-                                } catch (Failure $e) {
-
-                                    $this->logInfo("Test {$pathInfo} ({$testConfig['name']}) failed: " . $e->getMessage() . "\n", 'failure');
-
-                                } catch (\Exception $e) {
-
-                                    $this->logInfo("Test {$pathInfo} ({$testConfig['name']}) has unhandled exception:\n" . get_class($e) . ' : ' . $e->getMessage() . "\n", 'exception');
-                                }
+                                $this->logInfo("Test " . $className::$name . " has unhandled exception:\n" . get_class($e) . ' : ' . $e->getMessage() . "\n", 'exception');
                             }
                         }
                     }
+                    echo "= Test for group {$groupConfig['name']} finished. =\n";
+                    $driver->quit();
                 }
-
                 echo "Tests for this resolution finished.\n";
-
-                $driver->quit();
             }
         }
-
         echo "Ultimate finish!\n";
-    }
-
-    /**
-     * @param $message
-     * @param string $type
-     */
-    public function logInfo($message, $type = 'success')
-    {
-        if (!$this->logName) {
-            $this->logName = 'run_' . date('Ymd_His');
-        }
-
-        echo $message;
-        $path = APP_DIR . '/run-logs/' . $this->logName . '_' . $type . '.log';
-        file_put_contents($path, $message);
     }
 
     /**
@@ -197,6 +158,21 @@ class Bootstrap
         }
 
         return $driver;
+    }
+
+    /**
+     * @param $message
+     * @param string $type
+     */
+    public function logInfo($message, $type = 'success')
+    {
+        if (!$this->logName) {
+            $this->logName = 'run_' . date('Ymd_His');
+        }
+
+        echo "\n[INFO] {$message}";
+        $path = APP_DIR . '/run-logs/' . $this->logName . '_' . $type . '.log';
+        file_put_contents($path, $message);
     }
 
     /**
