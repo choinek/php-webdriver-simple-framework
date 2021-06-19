@@ -1,0 +1,29 @@
+{
+    "name": "choinek/php-webdriver-simple-framework",
+    "description": "Simple framework for functional tests based on Selenium/WebDriver and php-webdriver/php-webdriver",
+    "keywords": [
+        "framework",
+        "webdriver",
+        "selenium",
+        "php",
+        "tests"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^7.2",
+        "php-webdriver/webdriver": "^1.8"
+    },
+    "authors": [
+        {
+            "name": "Adrian Chojnicki",
+            "email": "adrian@chojnicki.pl",
+            "homepage": "https://github.com/choinek"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Choinek\\PhpWebDriverSimpleFramework\\": "src/"
+        }
+    }
+}
