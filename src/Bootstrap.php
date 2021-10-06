@@ -2,6 +2,7 @@
 
 namespace Choinek\PhpWebDriverSimpleFramework;
 
+use Choinek\PhpWebDriverSimpleFramework\Helpers\Registry;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use \Facebook\WebDriver\Remote\DesiredCapabilities;
 use \Facebook\WebDriver\Remote\RemoteWebDriver;
@@ -36,15 +37,18 @@ class Bootstrap
      * @param null $requestTimeoutInMs
      * @param null $httpProxy
      * @param null $httpProxyPort
+     * @param string $baseNamespace
      * @return Bootstrap
      */
-    static function create($testDir,
-                           $seleniumServerUrl = 'http://localhost:4444/wd/hub',
-                           $desiredCapabilities = null,
-                           $connectionTimeoutInMs = null,
-                           $requestTimeoutInMs = null,
-                           $httpProxy = null,
-                           $httpProxyPort = null)
+    public static function create(
+        $testDir,
+        $seleniumServerUrl = 'http://localhost:4444/wd/hub',
+        $desiredCapabilities = null,
+        $connectionTimeoutInMs = null,
+        $requestTimeoutInMs = null,
+        $httpProxy = null,
+        $httpProxyPort = null,
+        $baseNamespace = 'Tests'): Bootstrap
     {
         $bootstrap = new self;
         $bootstrap->testDir = $testDir;
@@ -54,7 +58,7 @@ class Bootstrap
         $bootstrap->requestTimeoutInMs = $requestTimeoutInMs;
         $bootstrap->httpProxy = $httpProxy;
         $bootstrap->httpProxyPort = $httpProxyPort;
-
+        Registry::setData(Registry::CFG_BASE_NAMESPACE, $baseNamespace, '_cfg');
         return $bootstrap;
     }
 
@@ -69,23 +73,23 @@ class Bootstrap
      * @param $height
      * @param string $name optional - if not assigned widthXheight will be used
      */
-    public function addResolution($width, $height, $name = '')
+    public function addResolution($width, $height, $name = ''): void
     {
         if (!$name) {
             $name = $width . 'x' . $height;
         }
 
         $this->resolutions[$name] = [
-            'width'  => $width,
+            'width' => $width,
             'height' => $height
         ];
     }
 
     /**
-     * @todo refactor whole function, its quick static mockup only
      * @throws \Exception
+     * @todo refactor whole function, its quick static mockup only
      */
-    public function run()
+    public function run(): void
     {
         foreach ($this->browsers as $browser) {
             foreach ($this->resolutions as $resolution) {
@@ -142,7 +146,7 @@ class Bootstrap
      * @param $resolution
      * @return RemoteWebDriver
      */
-    public function prepareRemoteWebDriver($browser, $resolution)
+    public function prepareRemoteWebDriver($browser, $resolution): RemoteWebDriver
     {
         try {
             $options = new ChromeOptions();
@@ -164,7 +168,7 @@ class Bootstrap
      * @param $message
      * @param string $type
      */
-    public function logInfo($message, $type = 'success')
+    public function logInfo($message, $type = 'success'): void
     {
         if (!$this->logName) {
             $this->logName = 'run_' . date('Ymd_His');
@@ -180,7 +184,7 @@ class Bootstrap
      *
      * @param $message
      */
-    public function sendMessage($message)
+    public function sendMessage($message): void
     {
         echo $message . "\n";
     }
