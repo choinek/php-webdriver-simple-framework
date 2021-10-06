@@ -35,9 +35,9 @@ abstract class TestAbstract
         $name = str_replace('/', '\\', $name);
 
         $className = Registry::getData(
-                Registry::CONFIG_NAMESPACE,
-                Registry::CFG_BASE_NAMESPACE)
-            . '\\Helpers\\'
+            Registry::CFG_BASE_NAMESPACE,
+            Registry::CONFIG_NAMESPACE
+            ) . '\\Helpers\\'
             . $name;
 
         if (!$singleton) {
