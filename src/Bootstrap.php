@@ -58,7 +58,7 @@ class Bootstrap
         $bootstrap->requestTimeoutInMs = $requestTimeoutInMs;
         $bootstrap->httpProxy = $httpProxy;
         $bootstrap->httpProxyPort = $httpProxyPort;
-        Registry::setData(Registry::CFG_BASE_NAMESPACE, $baseNamespace, '_cfg');
+        Registry::setData(Registry::CFG_BASE_NAMESPACE, $baseNamespace, Registry::CONFIG_NAMESPACE);
         return $bootstrap;
     }
 
