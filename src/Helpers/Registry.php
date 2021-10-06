@@ -7,8 +7,11 @@ namespace Choinek\PhpWebDriverSimpleFramework\Helpers;
  */
 class Registry
 {
-    public const DEFAULT_NAMESPACE = '__DEFAULT_NAMESPACE_';
-    
+    public const DEFAULT_NAMESPACE = '_DEFAULT_NAMESPACE';
+    public const CONFIG_NAMESPACE = '_CFG';
+
+    public const CFG_BASE_NAMESPACE = 'baseNamespace';
+
     /**
      * @var array
      */
