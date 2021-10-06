@@ -12,6 +12,11 @@ abstract class TestAbstract
     public $driver;
     public $session = [];
 
+    /**
+     * @var array
+     */
+    public static $helpers = [];
+
     public function __construct($driver)
     {
         $this->driver = $driver;
