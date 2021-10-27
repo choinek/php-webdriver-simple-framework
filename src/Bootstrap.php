@@ -125,20 +125,30 @@ class Bootstrap
                             } catch (Failure $e) {
 
                                 $this->logInfo("Test " . $className::$name . " failed: " . $e->getMessage() . "\n", 'failure');
-
+                                continue 2;
                             } catch (\Exception $e) {
 
                                 $this->logInfo("Test " . $className::$name . " has unhandled exception:\n" . get_class($e) . ' : ' . $e->getMessage() . "\n", 'exception');
+                                continue 2;
                             }
                         }
                     }
                     echo "= Test for group {$groupConfig['name']} finished. =\n";
                     $driver->quit();
                 }
-                echo "Tests for this resolution finished.\n";
+                echo "Tests for this resolution were finished.\n";
+
+                // @todo create some generator for error messages
+
+                if (TestAbstract::$errors) {
+                    echo '! Errors in project:' . PHP_EOL;
+                    foreach (TestAbstract::$errors as $priority => $count) {
+                        echo '! ' . TestAbstract::$errorsLabels[$priority] . ': ' . $count . PHP_EOL;
+                    }
+                }
             }
         }
-        echo "Ultimate finish!\n";
+        echo "All tests were finished.\n";
     }
 
     /**
