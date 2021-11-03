@@ -26,6 +26,7 @@ class Bootstrap
 
     public $browsers = [];
     public $resolutions = [];
+    public $codes = [];
 
     public $logName;
 
@@ -85,12 +86,23 @@ class Bootstrap
         ];
     }
 
+    public function parseArguments(): void
+    {
+        global $argv;
+        if (isset($argv[1])) {
+            $this->codes = explode(',', $argv[1]);
+            echo 'Run only tests: ' . implode(', ', $this->codes) . PHP_EOL;
+        }
+    }
+
     /**
      * @throws \Exception
      * @todo refactor whole function, its quick static mockup only
      */
     public function run(): void
     {
+        $this->parseArguments();
+
         foreach ($this->browsers as $browser) {
             foreach ($this->resolutions as $resolution) {
 
@@ -107,9 +119,13 @@ class Bootstrap
 
                 foreach ($config['tests'] as $groupConfig) {
 
-                    $driver = $this->prepareRemoteWebDriver($browser, $resolution);
+                    if ($this->codes && !in_array($groupConfig['code'] ?? '', $this->codes)) {
+                        continue;
+                    }
 
                     if ($groupConfig['active']) {
+                        $driver = $this->prepareRemoteWebDriver($browser, $resolution);
+
                         /** @todo interface */
                         echo "= Run test group: {$groupConfig['name']} =\n";
                         foreach ($groupConfig['classes'] as $className) {
@@ -132,10 +148,12 @@ class Bootstrap
                                 continue 2;
                             }
                         }
+
+                        echo "= Test for group {$groupConfig['name']} finished. =\n";
+                        $driver->quit();
                     }
-                    echo "= Test for group {$groupConfig['name']} finished. =\n";
-                    $driver->quit();
                 }
+
                 echo "Tests for this resolution were finished.\n";
 
                 // @todo create some generator for error messages
@@ -198,6 +216,4 @@ class Bootstrap
     {
         echo $message . "\n";
     }
-
-
 }
