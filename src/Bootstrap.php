@@ -150,6 +150,7 @@ class Bootstrap
                         }
 
                         echo "= Test for group {$groupConfig['name']} finished. =\n";
+                        TestAbstract::resetHelpers();
                         $driver->quit();
                     }
                 }

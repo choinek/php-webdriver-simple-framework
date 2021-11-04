@@ -46,7 +46,7 @@ abstract class TestAbstract
      * In some environments visible information.
      * @param $text
      */
-    public function debug($text)
+    public function debug($text): void
     {
         echo PHP_EOL . '[INFO]' . $text;
     }
@@ -55,7 +55,7 @@ abstract class TestAbstract
      * Visible information.
      * @param $text
      */
-    public function info($text)
+    public function info($text): void
     {
         echo PHP_EOL . '[INFO]' . $text;
     }
@@ -65,10 +65,10 @@ abstract class TestAbstract
      * @param $text
      * @param $priority
      */
-    public function error($text, $priority = self::PRIORITY_LOW)
+    public function error($text, $priority = self::PRIORITY_LOW): void
     {
         echo PHP_EOL . '[ERROR]' . $text;
-        TestAbstract::$errors[$priority] = !isset(TestAbstract::$errors[$priority]) ? 1 : TestAbstract::$errors[$priority] + 1;
+        self::$errors[$priority] = !isset(self::$errors[$priority]) ? 1 : self::$errors[$priority] + 1;
     }
 
     /**
@@ -76,7 +76,7 @@ abstract class TestAbstract
      * @param $text
      * @throws Failure
      */
-    public function failure($text)
+    public function failure($text): void
     {
         echo PHP_EOL . '[FAILURE]' . $text;
         throw new Failure($text);
@@ -86,6 +86,7 @@ abstract class TestAbstract
      * @param $name
      * @param bool $singleton
      * @return mixed
+     * @todo helpers should be implemented as service per test, not as static
      */
     public function helper($name, $singleton = true)
     {
@@ -106,6 +107,14 @@ abstract class TestAbstract
         }
 
         return self::$helpers[$name];
+    }
+
+    /**
+     * @todo helpers should be implemented as service per test, not as static
+     */
+    public static function resetHelpers(): void
+    {
+        self::$helpers = [];
     }
 
     /**
