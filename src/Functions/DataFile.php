@@ -2,6 +2,8 @@
 
 namespace Choinek\PhpWebDriverSimpleFramework\Functions;
 
+use Choinek\PhpWebDriverSimpleFramework\Helpers\Registry;
+
 /**
  * Class DataFile
  * @package Choinek\PhpWebDriverSimpleFramework\Functions
@@ -17,10 +19,15 @@ class DataFile {
             throw new Exception ('APP_DIR was not defined in run.php');
         }
 
-        $filePath = APP_DIR . DIRECTORY_SEPARATOR . 'data-file' . DIRECTORY_SEPARATOR . $name;
+        $environment = Registry::getData('environment', Registry::CONFIG_NAMESPACE);
+
+        if ($environment) {
+            $filePath = APP_DIR . DIRECTORY_SEPARATOR . 'data-file-environment' . DIRECTORY_SEPARATOR . $environment . DIRECTORY_SEPARATOR . $name;
+        } else {
+            $filePath = APP_DIR . DIRECTORY_SEPARATOR . 'data-file' . DIRECTORY_SEPARATOR . $name;
+        }
 
         if (is_file($filePath)) {
-
             $fileData = file_get_contents($filePath);
             /** @var array $jsonData */
             $jsonData = json_decode($fileData, true);

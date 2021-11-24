@@ -27,6 +27,7 @@ class Bootstrap
     public $browsers = [];
     public $resolutions = [];
     public $codes = [];
+    public $environment = null;
 
     public $logName;
 
@@ -89,9 +90,30 @@ class Bootstrap
     public function parseArguments(): void
     {
         global $argv;
-        if (isset($argv[1])) {
-            $this->codes = explode(',', $argv[1]);
-            echo 'Run only tests: ' . implode(', ', $this->codes) . PHP_EOL;
+        $flagsAvailable = ['--env', '--codes'];
+        $getFlag = false;
+
+        foreach ($argv as $value) {
+            if ($getFlag) {
+                switch ($getFlag) {
+                    case '--env':
+                        $this->environment = $value;
+                        Registry::setData('environment', $this->environment, Registry::CONFIG_NAMESPACE);
+                        echo 'Run on enviroment: ' . $this->environment . PHP_EOL;
+                        break;
+                    case '--codes':
+                        $this->codes = explode(',', $value);
+                        echo 'Run only tests: ' . implode(', ', $this->codes) . PHP_EOL;
+                        break;
+                }
+
+                $getFlag = false;
+                continue;
+            }
+
+            if (in_array($value, $flagsAvailable, true)) {
+                $getFlag = $value;
+            }
         }
     }
 
