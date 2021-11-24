@@ -4,7 +4,7 @@ namespace Choinek\PhpWebDriverSimpleFramework\Abstracts;
 
 use Choinek\PhpWebDriverSimpleFramework\Exceptions\Failure;
 use Choinek\PhpWebDriverSimpleFramework\Helpers\Registry;
-use Facebook\WebDriver\WebDriver;
+use Facebook\WebDriver\Remote\RemoteWebDriver;
 
 abstract class TestAbstract
 {
@@ -28,7 +28,7 @@ abstract class TestAbstract
      */
     public static $errors;
 
-    /** @var WebDriver $driver */
+    /** @var RemoteWebDriver $driver */
     public $driver;
     public $session = [];
 
@@ -37,7 +37,7 @@ abstract class TestAbstract
      */
     public static $helpers = [];
 
-    public function __construct($driver)
+    public function __construct(RemoteWebDriver $driver)
     {
         $this->driver = $driver;
     }
