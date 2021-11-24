@@ -35,11 +35,11 @@ class DataFile {
             if ($jsonData) {
                 return $jsonData;
             } else {
-                throw new Exception('Data file: ' . $name . ' - wrong or empty json.');
+                throw new Exception("Data file: $name ($filePath) - wrong or empty json.");
             }
 
         } else {
-            throw new \Exception ("Data file: $name was not found.");
+            throw new \Exception ("Data file: $name ($filePath) was not found.");
         }
     }
 }
