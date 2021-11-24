@@ -1,5 +1,11 @@
 <?php
 
+namespace Choinek\PhpWebDriverSimpleFramework\Functions;
+
+/**
+ * Class DataFile
+ * @package Choinek\PhpWebDriverSimpleFramework\Functions
+ */
 class DataFile {
 
     /**
