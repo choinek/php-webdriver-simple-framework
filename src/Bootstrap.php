@@ -180,6 +180,9 @@ class Bootstrap
                 echo "Tests for this resolution were finished.\n";
 
                 // @todo create some generator for error messages
+                if (TestAbstract::$successes) {
+                    echo 'Successful tests: ' . TestAbstract::$successes . PHP_EOL;
+                }
 
                 if (TestAbstract::$errors) {
                     echo '! Errors in project:' . PHP_EOL;

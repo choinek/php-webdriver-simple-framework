@@ -27,6 +27,7 @@ abstract class TestAbstract
      * @todo everything here should be passed as service
      */
     public static $errors;
+    public static $successes;
 
     /** @var RemoteWebDriver $driver */
     public $driver;
@@ -58,6 +59,15 @@ abstract class TestAbstract
     public function info($text): void
     {
         echo PHP_EOL . '[INFO]' . $text;
+    }
+
+    /**
+     * @param $text
+     */
+    public function success($text): void
+    {
+        echo PHP_EOL . '[OK]' . $text;
+        self::$successes++;
     }
 
     /**
@@ -93,8 +103,8 @@ abstract class TestAbstract
         $name = str_replace('/', '\\', $name);
 
         $className = Registry::getData(
-            Registry::CFG_BASE_NAMESPACE,
-            Registry::CONFIG_NAMESPACE
+                Registry::CFG_BASE_NAMESPACE,
+                Registry::CONFIG_NAMESPACE
             ) . '\\Helpers\\'
             . $name;
 
