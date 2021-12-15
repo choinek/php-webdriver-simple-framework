@@ -230,7 +230,7 @@ class Bootstrap
 
         echo "\n[INFO] {$message}";
         $path = APP_DIR . '/run-logs/' . $this->logName . '_' . $type . '.log';
-        file_put_contents($path, $message);
+        file_put_contents($path, $message . "\n", FILE_APPEND);
     }
 
     /**
