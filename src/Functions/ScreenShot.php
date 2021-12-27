@@ -3,6 +3,8 @@
 
 namespace Choinek\PhpWebDriverSimpleFramework\Functions;
 
+use Facebook\WebDriver\Remote\RemoteWebDriver;
+
 /**
  * Class ScreenShot
  * @package Choinek\PhpWebDriverSimpleFramework\Functions
