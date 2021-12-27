@@ -24,7 +24,7 @@ class ScreenShot
             $filename = time() . '.png';
         }
 
-        if (!((strlen($filename) - strripos($filename, '.png')) !== 4)) {
+        if ((strlen($filename) - strripos($filename, '.png')) !== 4) {
             $filename .= '.png';
         }
 
