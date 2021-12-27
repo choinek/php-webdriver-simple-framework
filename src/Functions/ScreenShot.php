@@ -21,10 +21,10 @@ class ScreenShot
     public static function full(RemoteWebDriver $driver, string $filename = null): void
     {
         if (!$filename) {
-            $filename = time() . 'png';
+            $filename = time() . '.png';
         }
 
-        if (!(strlen($filename) - strripos($filename, '.png') !== 4)) {
+        if (!((strlen($filename) - strripos($filename, '.png')) !== 4)) {
             $filename .= '.png';
         }
 
