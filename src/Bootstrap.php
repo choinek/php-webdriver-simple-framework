@@ -28,6 +28,7 @@ class Bootstrap
     public $resolutions = [];
     public $codes = [];
     public $environment = null;
+    public $force = false;
 
     public $logName;
 
@@ -87,15 +88,22 @@ class Bootstrap
         ];
     }
 
+    /**
+     * @todo use framework like symfony cli or sth
+     */
     public function parseArguments(): void
     {
         global $argv;
-        $flagsAvailable = ['--env', '--codes'];
+        $flagsAvailable = ['--env', '--codes', '--force', '--help'];
         $getFlag = false;
 
         foreach ($argv as $value) {
             if ($getFlag) {
                 switch ($getFlag) {
+                    case '--help':
+                        /** @todo write rest */
+                        echo 'Available flags: --env --codes --force --help';
+                        exit();
                     case '--env':
                         $this->environment = $value;
                         Registry::setData('environment', $this->environment, Registry::CONFIG_NAMESPACE);
@@ -104,6 +112,10 @@ class Bootstrap
                     case '--codes':
                         $this->codes = explode(',', $value);
                         echo 'Run only tests: ' . implode(', ', $this->codes) . PHP_EOL;
+                        break;
+                    case '--force':
+                        $this->force = $value;
+                        echo 'Force running unactive' . PHP_EOL;
                         break;
                 }
 
@@ -141,39 +153,44 @@ class Bootstrap
 
                 foreach ($config['tests'] as $groupConfig) {
 
-                    if ($this->codes && !in_array($groupConfig['code'] ?? '', $this->codes)) {
-                        continue;
-                    }
+                    $retry = $groupConfig['retry'] ?? 1;
 
-                    if ($groupConfig['active']) {
-                        $driver = $this->prepareRemoteWebDriver($browser, $resolution);
+                    for ($i = 0; $i < $retry; $i++) {
 
-                        /** @todo interface */
-                        echo "= Run test group: {$groupConfig['name']} =\n";
-                        foreach ($groupConfig['classes'] as $className) {
-                            echo '== Run test: ' . $className::$name . "\n";
-
-                            try {
-                                /** @var TestAbstract $test */
-                                $test = new $className($driver);
-
-                                $test->run();
-                                $this->logInfo("Test " . $className::$name . "\n");
-
-                            } catch (Failure $e) {
-
-                                $this->logInfo("Test " . $className::$name . " failed: " . $e->getMessage() . "\n", 'failure');
-                                continue 2;
-                            } catch (\Exception $e) {
-
-                                $this->logInfo("Test " . $className::$name . " has unhandled exception:\n" . get_class($e) . ' : ' . $e->getMessage() . "\n", 'exception');
-                                continue 2;
-                            }
+                        if ($this->codes && !in_array($groupConfig['code'] ?? '', $this->codes, true)) {
+                            continue;
                         }
 
-                        echo "= Test for group {$groupConfig['name']} finished. =\n";
-                        TestAbstract::resetHelpers();
-                        $driver->quit();
+                        if ($groupConfig['active'] || $this->force) {
+                            $driver = $this->prepareRemoteWebDriver($browser, $resolution);
+
+                            /** @todo interface */
+                            echo "= Run test group: {$groupConfig['name']} =\n";
+                            foreach ($groupConfig['classes'] as $className) {
+                                echo '== Run test: ' . $className::$name . "\n";
+
+                                try {
+                                    /** @var TestAbstract $test */
+                                    $test = new $className($driver);
+
+                                    $test->run();
+                                    $this->logInfo("Test " . $className::$name . "\n");
+
+                                } catch (Failure $e) {
+
+                                    $this->logInfo("Test " . $className::$name . " failed: " . $e->getMessage() . "\n", 'failure');
+                                    continue 2;
+                                } catch (\Exception $e) {
+
+                                    $this->logInfo("Test " . $className::$name . " has unhandled exception:\n" . get_class($e) . ' : ' . $e->getMessage() . "\n", 'exception');
+                                    continue 2;
+                                }
+                            }
+
+                            echo "= Test for group {$groupConfig['name']} finished. =\n";
+                            TestAbstract::resetHelpers();
+                            $driver->quit();
+                        }
                     }
                 }
 
