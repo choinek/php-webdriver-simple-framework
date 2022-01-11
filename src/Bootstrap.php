@@ -26,6 +26,9 @@ class Bootstrap
 
     public $browsers = [];
     public $resolutions = [];
+    public $codes = [];
+    public $environment = null;
+    public $force = false;
 
     public $logName;
 
@@ -86,11 +89,54 @@ class Bootstrap
     }
 
     /**
+     * @todo use framework like symfony cli or sth
+     */
+    public function parseArguments(): void
+    {
+        global $argv;
+        $flagsAvailable = ['--env', '--codes', '--force', '--help'];
+        $getFlag = false;
+
+        foreach ($argv as $value) {
+            if ($getFlag) {
+                switch ($getFlag) {
+                    case '--help':
+                        /** @todo write rest */
+                        echo 'Available flags: --env --codes --force --help';
+                        exit();
+                    case '--env':
+                        $this->environment = $value;
+                        Registry::setData('environment', $this->environment, Registry::CONFIG_NAMESPACE);
+                        echo 'Run on enviroment: ' . $this->environment . PHP_EOL;
+                        break;
+                    case '--codes':
+                        $this->codes = explode(',', $value);
+                        echo 'Run only tests: ' . implode(', ', $this->codes) . PHP_EOL;
+                        break;
+                    case '--force':
+                        $this->force = $value;
+                        echo 'Force running unactive' . PHP_EOL;
+                        break;
+                }
+
+                $getFlag = false;
+                continue;
+            }
+
+            if (in_array($value, $flagsAvailable, true)) {
+                $getFlag = $value;
+            }
+        }
+    }
+
+    /**
      * @throws \Exception
      * @todo refactor whole function, its quick static mockup only
      */
     public function run(): void
     {
+        $this->parseArguments();
+
         foreach ($this->browsers as $browser) {
             foreach ($this->resolutions as $resolution) {
 
@@ -107,38 +153,63 @@ class Bootstrap
 
                 foreach ($config['tests'] as $groupConfig) {
 
-                    $driver = $this->prepareRemoteWebDriver($browser, $resolution);
+                    $retry = $groupConfig['retry'] ?? 1;
 
-                    if ($groupConfig['active']) {
-                        /** @todo interface */
-                        echo "= Run test group: {$groupConfig['name']} =\n";
-                        foreach ($groupConfig['classes'] as $className) {
-                            echo '== Run test: ' . $className::$name . "\n";
+                    for ($i = 0; $i < $retry; $i++) {
 
-                            try {
-                                /** @var TestAbstract $test */
-                                $test = new $className($driver);
+                        if ($this->codes && !in_array($groupConfig['code'] ?? '', $this->codes, true)) {
+                            continue;
+                        }
 
-                                $test->run();
-                                $this->logInfo("Test " . $className::$name . "\n");
+                        if ($groupConfig['active'] || $this->force) {
+                            $driver = $this->prepareRemoteWebDriver($browser, $resolution);
 
-                            } catch (Failure $e) {
+                            /** @todo interface */
+                            echo "= Run test group: {$groupConfig['name']} =\n";
+                            foreach ($groupConfig['classes'] as $className) {
+                                echo '== Run test: ' . $className::$name . "\n";
 
-                                $this->logInfo("Test " . $className::$name . " failed: " . $e->getMessage() . "\n", 'failure');
+                                try {
+                                    /** @var TestAbstract $test */
+                                    $test = new $className($driver);
 
-                            } catch (\Exception $e) {
+                                    $test->run();
+                                    $this->logInfo("Test " . $className::$name . "\n");
 
-                                $this->logInfo("Test " . $className::$name . " has unhandled exception:\n" . get_class($e) . ' : ' . $e->getMessage() . "\n", 'exception');
+                                } catch (Failure $e) {
+
+                                    $this->logInfo("Test " . $className::$name . " failed: " . $e->getMessage() . "\n", 'failure');
+                                    continue 2;
+                                } catch (\Exception $e) {
+
+                                    $this->logInfo("Test " . $className::$name . " has unhandled exception:\n" . get_class($e) . ' : ' . $e->getMessage() . "\n", 'exception');
+                                    continue 2;
+                                }
                             }
+
+                            echo "= Test for group {$groupConfig['name']} finished. =\n";
+                            TestAbstract::resetHelpers();
+                            $driver->quit();
                         }
                     }
-                    echo "= Test for group {$groupConfig['name']} finished. =\n";
-                    $driver->quit();
                 }
-                echo "Tests for this resolution finished.\n";
+
+                echo "Tests for this resolution were finished.\n";
+
+                // @todo create some generator for error messages
+                if (TestAbstract::$successes) {
+                    echo 'Successful tests: ' . TestAbstract::$successes . PHP_EOL;
+                }
+
+                if (TestAbstract::$errors) {
+                    echo '! Errors in project:' . PHP_EOL;
+                    foreach (TestAbstract::$errors as $priority => $count) {
+                        echo '! ' . TestAbstract::$errorsLabels[$priority] . ': ' . $count . PHP_EOL;
+                    }
+                }
             }
         }
-        echo "Ultimate finish!\n";
+        echo "All tests were finished.\n";
     }
 
     /**
@@ -176,7 +247,7 @@ class Bootstrap
 
         echo "\n[INFO] {$message}";
         $path = APP_DIR . '/run-logs/' . $this->logName . '_' . $type . '.log';
-        file_put_contents($path, $message);
+        file_put_contents($path, $message . "\n", FILE_APPEND);
     }
 
     /**
@@ -188,6 +259,5 @@ class Bootstrap
     {
         echo $message . "\n";
     }
-
 
 }
