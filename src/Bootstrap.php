@@ -27,10 +27,15 @@ class Bootstrap
     public $browsers = [];
     public $resolutions = [];
     public $codes = [];
+    /**
+     * @var string[]
+     */
+    public $tags = [];
     public $environment = null;
     public $force = false;
 
     public $logName;
+
 
     /**
      * @param $testDir
@@ -94,7 +99,7 @@ class Bootstrap
     public function parseArguments(): void
     {
         global $argv;
-        $flagsAvailable = ['--env', '--codes', '--force', '--help'];
+        $flagsAvailable = ['--env', '--codes', '--tags', '--force', '--help'];
         $getFlag = false;
 
         foreach ($argv as $value) {
@@ -111,7 +116,17 @@ class Bootstrap
                         break;
                     case '--codes':
                         $this->codes = explode(',', $value);
-                        echo 'Run only tests: ' . implode(', ', $this->codes) . PHP_EOL;
+                        echo 'Run only tests with codes: ' . implode(', ', $this->codes) . PHP_EOL;
+                        if ($this->tags) {
+                            echo '[!] Warning - you have defined codes and tags parameters. It is not handled.' . PHP_EOL;
+                        }
+                        break;
+                    case '--tags':
+                        $this->tags = explode(',', $value);
+                        echo 'Run only tests with tags: ' . implode(', ', $this->tags) . PHP_EOL;
+                        if ($this->codes) {
+                            echo '[!] Warning - you have defined codes and tags parameters. It is not handled.' . PHP_EOL;
+                        }
                         break;
                     case '--force':
                         $this->force = $value;
@@ -159,6 +174,18 @@ class Bootstrap
 
                         if ($this->codes && !in_array($groupConfig['code'] ?? '', $this->codes, true)) {
                             continue;
+                        }
+
+                        if ($this->tags) {
+                            $omit = true;
+                            foreach ($this->tags as $tag) {
+                                if (in_array($tag, $groupConfig['tags'] ?? [], true)) {
+                                    $omit = false;
+                                }
+                            }
+                            if ($omit) {
+                                continue;
+                            }
                         }
 
                         if ($groupConfig['active'] || $this->force) {
