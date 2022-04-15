@@ -240,19 +240,29 @@ class Bootstrap
     }
 
     /**
-     * @param $browser
-     * @param $resolution
+     * @param DesiredCapabilities|mixed $browser
+     * @param WebDriverDimension|mixed $resolution
      * @return RemoteWebDriver
      */
     public function prepareRemoteWebDriver($browser, $resolution): RemoteWebDriver
     {
+        if (!($browser instanceof DesiredCapabilities)) {
+            $browser = DesiredCapabilities::chrome();
+        }
+
         try {
             $options = new ChromeOptions();
 //            $options->addArguments(array('--window-size=1000,1000', '--accept-ssl-certs=true'));
 
-            $driver = RemoteWebDriver::create($this->seleniumServerUrl, DesiredCapabilities::chrome());
-            $driver->manage()->window()->maximize();
-//    $driver->manage()->window()->setSize(new WebDriverDimension($resolution['width'], $resolution['height']));
+            $driver = RemoteWebDriver::create($this->seleniumServerUrl, $browser);
+
+
+            if ($resolution instanceof WebDriverDimension) {
+                $driver->manage()->window()->setSize($resolution);
+            } else {
+                $driver->manage()->window()->maximize();
+            }
+
         } catch (\Exception $e) {
             echo "There was an error while connecting ChromeDriver to browser - check Chrome version\n";
             echo "Error: \n" . $e->getMessage();
