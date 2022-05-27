@@ -48,16 +48,19 @@ class Elements {
      */
     static function goTo($element, RemoteWebDriver $driver)
     {
-        $action = new WebDriverActions($driver);
+      //  $action = new WebDriverActions($driver);
 
         self::waitUntilDomReadyState($driver);
 
-        $driver->executeScript('window.scrollBy(0,1000);');
+        $driver->executeScript('window.scrollBy(0,Math.max(
+              document.body.scrollHeight, document.documentElement.scrollHeight,
+              document.body.offsetHeight, document.documentElement.offsetHeight,
+              document.body.clientHeight, document.documentElement.clientHeight
+        ));');
 
-        $driver->executeScript('window.scrollBy(0,document.body.scrollHeight);');
-
-        $action->moveToElement($element)->perform();
-        $driver->executeScript('window.scrollBy(0,100);');
+        $driver->executeScript(arguments[0].scrollIntoView(true), $element);
+       // $action->moveToElement($element)->perform();
+        //$driver->executeScript('window.scrollBy(0,100);');
     }
 
     /**
