@@ -52,6 +52,8 @@ class Elements {
 
         self::waitUntilDomReadyState($driver);
 
+        $driver->executeScript('window.scrollBy(0,1000);');
+
         $driver->executeScript('window.scrollBy(0,document.body.scrollHeight);');
 
         $action->moveToElement($element)->perform();
