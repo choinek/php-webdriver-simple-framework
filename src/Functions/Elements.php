@@ -6,6 +6,7 @@
 namespace Choinek\PhpWebDriverSimpleFramework\Functions;
 
 use Facebook\WebDriver\Interactions\WebDriverActions;
+use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\WebDriverElement;
 
 /**
@@ -42,12 +43,28 @@ class Elements {
     /**
      * Go to element (scroll window)
      * @param $element
-     * @param $driver
+     * @param RemoteWebDriver $driver
+     * @throws \Exception
      */
-    static function goTo($element, $driver)
+    static function goTo($element, RemoteWebDriver $driver)
     {
         $action = new WebDriverActions($driver);
+
+        self::waitUntilDomReadyState($driver);
+
         $action->moveToElement($element)->perform();
         $driver->executeScript('window.scrollBy(0,100);');
+    }
+
+    /**
+     * @param RemoteWebDriver $driver
+     * @return void
+     * @throws \Exception
+     */
+    static function waitUntilDomReadyState(RemoteWebDriver $driver): void
+    {
+        $driver->wait()->until(function ($driver) {
+            return $driver->executeScript('return document.readyState') === 'complete';
+        });
     }
 }
